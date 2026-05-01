@@ -5,9 +5,6 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import jwt from 'jsonwebtoken';
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 dotenv.config()
 
@@ -20,67 +17,23 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('dev'));
 app.use(cors());
-app.use(express.json());
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { error: 'Too many requests, please try again later.' },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: { error: 'Too many requests' },
 });
-
 app.use(limiter);
 
-// JWT Middleware
-const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, user) => {
-      if (err) return res.sendStatus(403);
-      req.user = user;
-      next();
-    });
-  } else {
-    next();
-  }
-};
+// Local routes (Gateway itself)
+app.get('/status', express.json(), statusController.getStatus);
 
-// Swagger Setup
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'RentPi API Gateway',
-      version: '1.0.0',
-      description: 'Central API Gateway for RentPi Microservices',
-    },
-    servers: [{ url: 'http://localhost:8000' }],
-  },
-  apis: ['./src/index.js'], // In a real app, you'd point to all route files
-};
-
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// P1: Aggregated health check
-/**
- * @openapi
- * /status:
- *   get:
- *     description: Aggregated health check of all microservices
- *     responses:
- *       200:
- *         description: Returns health status
- */
-app.get('/status', statusController.getStatus);
-
-// Proxy helper
-const proxy = (target) =>
+// Proxy helper - Modern HPM v3 compatible
+const createServiceProxy = (pathFilter, target) => 
   createProxyMiddleware({
     target,
     changeOrigin: true,
+    pathFilter, // Only proxy requests starting with this path
     timeout: 60000,
     proxyTimeout: 60000,
     onError: (err, req, res) => {
@@ -88,13 +41,14 @@ const proxy = (target) =>
       if (!res.headersSent) {
         res.status(502).json({ error: 'Proxy error', details: err.message });
       }
-    },
+    }
   });
 
 // Route prefixes → downstream services
-app.use('/users', proxy(process.env.USER_SERVICE_URL || 'http://user-service:8001'));
-app.use('/rentals', proxy(process.env.RENTAL_SERVICE_URL || 'http://rental-service:8002'));
-app.use('/analytics', proxy(process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:8003'));
-app.use('/chat', proxy(process.env.AGENTIC_SERVICE_URL || 'http://agentic-service:8004'));
+// We use app.use() on the root so HPM sees the full, unstripped path.
+app.use(createServiceProxy('/users', process.env.USER_SERVICE_URL || 'http://user-service:8001'));
+app.use(createServiceProxy('/rentals', process.env.RENTAL_SERVICE_URL || 'http://rental-service:8002'));
+app.use(createServiceProxy('/analytics', process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:8003'));
+app.use(createServiceProxy('/chat', process.env.AGENTIC_SERVICE_URL || 'http://agentic-service:8004'));
 
 app.listen(PORT, () => console.log(`api-gateway listening on :${PORT}`));

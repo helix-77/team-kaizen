@@ -163,8 +163,10 @@ services:
       CENTRAL_API_URL:       ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN:     ${CENTRAL_API_TOKEN}
       GROQ_API_KEY:          ${GROQ_API_KEY:-}
-      ANALYTICS_SERVICE_URL: http://analytics-service:8003
-      RENTAL_SERVICE_URL:    http://rental-service:8002
+      GATEWAY_URL:           http://api-gateway:8000
+      ANALYTICS_SERVICE_URL: http://api-gateway:8000
+      RENTAL_SERVICE_URL:    http://api-gateway:8000
+      USER_SERVICE_URL:      http://api-gateway:8000
     depends_on:
       mongodb:
         condition: service_healthy

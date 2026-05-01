@@ -10,9 +10,11 @@ const RENTPI_KEYWORDS = [
   "history", "stats", "busiest", "busy", "trend", "season", "top", "record"
 ];
 
-const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:8003';
-const RENTAL_SERVICE_URL = process.env.RENTAL_SERVICE_URL || 'http://rental-service:8002';
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:8001';
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://api-gateway:8000';
+
+const ANALYTICS_SERVICE_URL = GATEWAY_URL; // Routes via /analytics
+const RENTAL_SERVICE_URL = GATEWAY_URL;    // Routes via /rentals
+const USER_SERVICE_URL = GATEWAY_URL;      // Routes via /users
 
 function isOnTopic(message) {
   const lower = message.toLowerCase();
