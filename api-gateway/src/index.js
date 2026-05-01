@@ -26,13 +26,10 @@ app.use(limiter);
 app.get('/status', statusController.getStatus);
 
 // Proxy helper
-const proxy = (target, prefix) =>
+const proxy = (target) =>
   createProxyMiddleware({
     target,
     changeOrigin: true,
-    pathRewrite: {
-      [`^${prefix}`]: '',
-    },
     timeout: 60000,
     proxyTimeout: 60000,
     onError: (err, req, res) => {
@@ -43,10 +40,10 @@ const proxy = (target, prefix) =>
     },
   });
 
-// Route prefixes -> downstream services
-app.use('/users', proxy(process.env.USER_SERVICE_URL || 'http://user-service:8001', '/users'));
-app.use('/rentals', proxy(process.env.RENTAL_SERVICE_URL || 'http://rental-service:8002', '/rentals'));
-app.use('/analytics', proxy(process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:8003', '/analytics'));
-app.use('/chat', proxy(process.env.AGENTIC_SERVICE_URL || 'http://agentic-service:8004', '/chat'));
+// Route prefixes → downstream services
+app.use('/users', proxy(process.env.USER_SERVICE_URL || 'http://user-service:8001'));
+app.use('/rentals', proxy(process.env.RENTAL_SERVICE_URL || 'http://rental-service:8002'));
+app.use('/analytics', proxy(process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:8003'));
+app.use('/chat', proxy(process.env.AGENTIC_SERVICE_URL || 'http://agentic-service:8004'));
 
 app.listen(PORT, () => console.log(`api-gateway listening on :${PORT}`));
