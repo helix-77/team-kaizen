@@ -1,0 +1,336 @@
+{
+	"info": {
+		"_postman_id": "rentpi-discovery",
+		"name": "RentPi – Master API Collection",
+		"description": "All discovered endpoints for RentPi microservices. Use direct service ports (8001‑8004) to avoid gateway proxy hangs. Gateway /status included for health checks.\n\nVariables:\n  base_url - host (default: http://127.0.0.1)\n  token    - JWT token (set after login)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Gateway (8000)",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8000/status"
+					}
+				}
+			]
+		},
+		{
+			"name": "User Service (8001)",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}:8001/users/register",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"TestUser\",\n\t\"email\": \"test@rentpi.com\",\n\t\"password\": \"Pass1234\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}:8001/users/login",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"test@rentpi.com\",\n\t\"password\": \"Pass1234\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Current User (JWT)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8001/users/me",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Discount for User ID",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8001/users/{{user_id}}/discount",
+						"path": {
+							"type": "variable",
+							"value": "1"
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8001/status"
+					}
+				}
+			]
+		},
+		{
+			"name": "Rental Service (8002)",
+			"item": [
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/products?category=TOOLS&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "products"],
+							"query": [
+								{"key": "category", "value": "TOOLS"},
+								{"key": "page", "value": "1"},
+								{"key": "limit", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8002/rentals/products/1"
+					}
+				},
+				{
+					"name": "Product Availability",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/products/1/availability?from=2024-01-01&to=2024-12-31",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "products", "1", "availability"],
+							"query": [
+								{"key": "from", "value": "2024-01-01"},
+								{"key": "to", "value": "2024-12-31"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Kth Busiest Date",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/kth-busiest-date?from=2024-01&to=2024-12&k=3",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "kth-busiest-date"],
+							"query": [
+								{"key": "from", "value": "2024-01"},
+								{"key": "to", "value": "2024-12"},
+								{"key": "k", "value": "3"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Top Categories for User",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/users/1/top-categories?k=5",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "users", "1", "top-categories"],
+							"query": [
+								{"key": "k", "value": "5"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Longest Free Streak",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/products/1/free-streak?year=2024",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "products", "1", "free-streak"],
+							"query": [
+								{"key": "year", "value": "2024"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Merged Feed",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8002/rentals/merged-feed?productIds=1,2,3&limit=30",
+							"host": ["{{base_url}}"],
+							"port": "8002",
+							"path": ["rentals", "merged-feed"],
+							"query": [
+								{"key": "productIds", "value": "1,2,3"},
+								{"key": "limit", "value": "30"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8002/status"
+					}
+				}
+			]
+		},
+		{
+			"name": "Analytics Service (8003)",
+			"item": [
+				{
+					"name": "Peak 7-Day Window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8003/analytics/peak-window?from=2024-01&to=2024-12",
+							"host": ["{{base_url}}"],
+							"port": "8003",
+							"path": ["analytics", "peak-window"],
+							"query": [
+								{"key": "from", "value": "2024-01"},
+								{"key": "to", "value": "2024-12"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Surge Days",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8003/analytics/surge-days?month=2024-05",
+							"host": ["{{base_url}}"],
+							"port": "8003",
+							"path": ["analytics", "surge-days"],
+							"query": [
+								{"key": "month", "value": "2024-05"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Seasonal Recommendations",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}:8003/analytics/recommendations?date=2024-05-01&limit=5",
+							"host": ["{{base_url}}"],
+							"port": "8003",
+							"path": ["analytics", "recommendations"],
+							"query": [
+								{"key": "date", "value": "2024-05-01"},
+								{"key": "limit", "value": "5"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8003/status"
+					}
+				}
+			]
+		},
+		{
+			"name": "Agentic Service (8004)",
+			"item": [
+				{
+					"name": "Chat – Send Message",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}:8004/chat",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"message\": \"Which category had the most rentals?\"\n}"
+						}
+					}
+				},
+				{
+					"name": "List Chat Sessions",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8004/chat/sessions"
+					}
+				},
+				{
+					"name": "Get Chat History",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8004/chat/{{session_id}}/history",
+						"path": {
+							"type": "variable",
+							"value": "session_id",
+							"description": "ID from List Chat Sessions"
+						}
+					}
+				},
+				{
+					"name": "Delete Chat Session",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}:8004/chat/{{session_id}}",
+						"path": {
+							"type": "variable",
+							"value": "session_id",
+							"description": "ID of session to delete"
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}:8004/status"
+					}
+				}
+			]
+		}
+	]
+}

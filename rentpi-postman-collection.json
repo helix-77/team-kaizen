@@ -1,0 +1,259 @@
+{
+	"info": {
+		"_postman_id": "89a4682e-e275-440b-aae3-e7de52f23599",
+		"name": "RentPi - Full API Suite",
+		"description": "Comprehensive Postman collection for all RentPi microservices.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Gateway",
+			"item": [
+				{
+					"name": "Gateway Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8000/status",
+							"host": ["{{baseUrl}}"],
+							"port": "8000",
+							"path": ["status"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "User Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8001/status",
+							"host": ["{{baseUrl}}"],
+							"port": "8001",
+							"path": ["status"]
+						}
+					}
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TestUser\",\n    \"email\": \"tester@rentpi.com\",\n    \"password\": \"Pass1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}:8001/users/register",
+							"host": ["{{baseUrl}}"],
+							"port": "8001",
+							"path": ["users", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"tester@rentpi.com\",\n    \"password\": \"Pass1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}:8001/users/login",
+							"host": ["{{baseUrl}}"],
+							"port": "8001",
+							"path": ["users", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{baseUrl}}:8001/users/me",
+							"host": ["{{baseUrl}}"],
+							"port": "8001",
+							"path": ["users", "me"]
+						}
+					}
+				},
+				{
+					"name": "Get Discount",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8001/users/1/discount",
+							"host": ["{{baseUrl}}"],
+							"port": "8001",
+							"path": ["users", "1", "discount"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Rental Service",
+			"item": [
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8002/rentals/products?category=TOOLS&page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"port": "8002",
+							"path": ["rentals", "products"],
+							"query": [
+								{"key": "category", "value": "TOOLS"},
+								{"key": "page", "value": "1"},
+								{"key": "limit", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8002/rentals/products/1/availability?from=2024-01-01&to=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"port": "8002",
+							"path": ["rentals", "products", "1", "availability"],
+							"query": [
+								{"key": "from", "value": "2024-01-01"},
+								{"key": "to", "value": "2024-12-31"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Kth Busiest Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8002/rentals/kth-busiest-date?from=2024-01&to=2024-12&k=3",
+							"host": ["{{baseUrl}}"],
+							"port": "8002",
+							"path": ["rentals", "kth-busiest-date"],
+							"query": [
+								{"key": "from", "value": "2024-01"},
+								{"key": "to", "value": "2024-12"},
+								{"key": "k", "value": "3"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Analytics Service",
+			"item": [
+				{
+					"name": "Peak Window",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8003/analytics/peak-window?from=2024-01&to=2024-12",
+							"host": ["{{baseUrl}}"],
+							"port": "8003",
+							"path": ["analytics", "peak-window"],
+							"query": [
+								{"key": "from", "value": "2024-01"},
+								{"key": "to", "value": "2024-12"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Surge Days",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8003/analytics/surge-days?month=2024-05",
+							"host": ["{{baseUrl}}"],
+							"port": "8003",
+							"path": ["analytics", "surge-days"],
+							"query": [{"key": "month", "value": "2024-05"}]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Agentic Service",
+			"item": [
+				{
+					"name": "Chat",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What are the trending products?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}:8004/chat",
+							"host": ["{{baseUrl}}"],
+							"port": "8004",
+							"path": ["chat"]
+						}
+					}
+				},
+				{
+					"name": "Get Sessions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8004/chat/sessions",
+							"host": ["{{baseUrl}}"],
+							"port": "8004",
+							"path": ["chat", "sessions"]
+						}
+					}
+				},
+				{
+					"name": "Get History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}:8004/chat/SESSION_ID_HERE/history",
+							"host": ["{{baseUrl}}"],
+							"port": "8004",
+							"path": ["chat", "SESSION_ID_HERE", "history"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": { "type": "text/javascript", "exec": [""] }
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://127.0.0.1" },
+		{ "key": "token", "value": "YOUR_JWT_HERE" }
+	]
+}
