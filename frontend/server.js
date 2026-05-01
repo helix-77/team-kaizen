@@ -14,7 +14,7 @@ app.get('/status', (req, res) => {
   res.json({ service: 'frontend', status: 'OK' });
 });
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 

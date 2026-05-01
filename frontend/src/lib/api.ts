@@ -57,7 +57,9 @@ export const getRecommendations = async (date: string) => {
   return res.data;
 };
 
+const CHAT_URL = import.meta.env.VITE_CHAT_URL || `/chat`;
+
 export const chatWithAgent = async (sessionId: string, message: string) => {
-  const res = await api.post('/chat', { sessionId, message });
+  const res = await api.post(CHAT_URL, { sessionId, message });
   return res.data;
 };
