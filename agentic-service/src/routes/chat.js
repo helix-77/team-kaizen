@@ -1,17 +1,14 @@
 import express from 'express';
-import * as chatController from '../controller/chat.js';
+import * as chatController from '../controller/chatController.js';
 
 const router = express.Router();
 
-// README endpoints after gateway strips /chat
-router.post('/', chatController.sendMessage);
-router.get('/sessions', chatController.getSessions);
-router.get('/:sessionId/history', chatController.getSessionHistory);
-router.delete('/:sessionId', chatController.deleteSession);
+// P15: RentPi AI Assistant — POST /chat (gateway strips /chat prefix)
+router.post('/', chatController.chat);
 
-// Backward-compatible aliases from the old implementation.
-router.post('/message', chatController.sendMessage);
-router.get('/history/:conversationId', chatController.getHistory);
-router.get('/conversations/:userId', chatController.getConversations);
+// P16: Chat That Remembers
+router.get('/sessions', chatController.getSessions);
+router.get('/:sessionId/history', chatController.getHistory);
+router.delete('/:sessionId', chatController.deleteSession);
 
 export default router;

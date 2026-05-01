@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import { initDb } from './db.js';
-import * as chatController from './controller/chatController.js';
+import chatRouter from './routes/chat.js';
 
 dotenv.config();
 
@@ -12,12 +13,24 @@ const PORT = process.env.PORT || 8004;
 app.use(cors());
 app.use(express.json());
 
-app.get('/status', chatController.getStatus);
-app.post('/chat', chatController.chat);
-app.get('/chat/sessions', chatController.getSessions);
-app.get('/chat/:sessionId/history', chatController.getHistory);
-app.delete('/chat/:sessionId', chatController.deleteSession);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
+
+// P1: Health check
+app.get('/status', (req, res) => {
+  res.json({ service: 'agentic-service', status: 'OK' });
+});
+
+// All chat routes — gateway strips /chat prefix before forwarding here
+app.use('/', chatRouter);
 
 initDb().then(() => {
-  app.listen(PORT, () => console.log(`agentic-service listening on port ${PORT}`));
+  app.listen(PORT, () => console.log(`agentic-service listening on :${PORT}`));
 });

@@ -37,6 +37,10 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+.agent
+.agents
+prompts.md
+context.md
 
 # Logs
 *.log
