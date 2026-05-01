@@ -1,0 +1,84 @@
+# RentPi API - Master Curl Commands
+
+# 1. Gateway Status (Port 8000)
+curl -X GET "http://127.0.0.1:8000/status"
+
+# 2. User Service (Port 8001)
+# Register a new user
+curl -X POST "http://127.0.0.1:8001/users/register" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"TestUser","email":"tester@rentpi.com","password":"Pass1234"}'
+
+# Login to get JWT
+curl -X POST "http://127.0.0.1:8001/users/login" \
+     -H "Content-Type: application/json" \
+     -d '{"email":"tester@rentpi.com","password":"Pass1234"}'
+
+# Get current user profile (Requires JWT)
+curl -X GET "http://127.0.0.1:8001/users/me" \
+     -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+
+# Get discount for user 1
+curl -X GET "http://127.0.0.1:8001/users/1/discount"
+
+# Health Check
+curl -X GET "http://127.0.0.1:8001/status"
+
+
+# 3. Rental Service (Port 8002)
+# List products with pagination and category filter
+curl -X GET "http://127.0.0.1:8002/rentals/products?category=TOOLS&page=1&limit=10"
+
+# Get specific product by ID
+curl -X GET "http://127.0.0.1:8002/rentals/products/1"
+
+# Check product availability
+curl -X GET "http://127.0.0.1:8002/rentals/products/1/availability?from=2024-01-01&to=2024-12-31"
+
+# Find Kth busiest date
+curl -X GET "http://127.0.0.1:8002/rentals/kth-busiest-date?from=2024-01&to=2024-12&k=3"
+
+# Top categories for a user
+curl -X GET "http://127.0.0.1:8002/rentals/users/1/top-categories?k=5"
+
+# Longest free streak for a product
+curl -X GET "http://127.0.0.1:8002/rentals/products/1/free-streak?year=2024"
+
+# Unified merged feed for multiple products
+curl -X GET "http://127.0.0.1:8002/rentals/merged-feed?productIds=1,2,3&limit=30"
+
+# Health Check
+curl -X GET "http://127.0.0.1:8002/status"
+
+
+# 4. Analytics Service (Port 8003)
+# Find peak 7-day window
+curl -X GET "http://127.0.0.1:8003/analytics/peak-window?from=2024-01&to=2024-12"
+
+# Detect surge days in a month
+curl -X GET "http://127.0.0.1:8003/analytics/surge-days?month=2024-05"
+
+# Get seasonal recommendations
+curl -X GET "http://127.0.0.1:8003/analytics/recommendations?date=2024-05-01&limit=5"
+
+# Health Check
+curl -X GET "http://127.0.0.1:8003/status"
+
+
+# 5. Agentic Service (Port 8004)
+# Chat with AI Assistant
+curl -X POST "http://127.0.0.1:8004/chat" \
+     -H "Content-Type: application/json" \
+     -d '{"message":"Which category had the most rentals?"}'
+
+# List chat sessions
+curl -X GET "http://127.0.0.1:8004/chat/sessions"
+
+# Get chat history for a session
+curl -X GET "http://127.0.0.1:8004/chat/<SESSION_ID>/history"
+
+# Delete a chat session
+curl -X DELETE "http://127.0.0.1:8004/chat/<SESSION_ID>"
+
+# Health Check
+curl -X GET "http://127.0.0.1:8004/status"

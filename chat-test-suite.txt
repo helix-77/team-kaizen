@@ -1,0 +1,31 @@
+# Chat Assistant Test Suite - 10 Variations
+
+# 1. Grounding: Category Stats
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"Which category had the most rentals?"}'
+
+# 2. Grounding: Trending Products
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"What are the trending products right now?"}'
+
+# 3. Grounding: Peak Window
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"When was the peak rental window in 2024?"}'
+
+# 4. Grounding: Recommendations
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"Can you recommend some products for today?"}'
+
+# 5. Topic Guard: Sports (Refusal Test)
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"Who won the World Cup in 2022?"}'
+
+# 6. Topic Guard: Recipes (Refusal Test)
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"How do I make a chocolate cake?"}'
+
+# 7. Knowledge: Pricing
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"How are rental prices determined at RentPi?"}'
+
+# 8. Knowledge: Discounts
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"What is the maximum discount I can get on RentPi?"}'
+
+# 9. Knowledge: General Products
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"What categories of gear are available for rent?"}'
+
+# 10. Grounding: Detailed Stats
+curl -X POST "http://127.0.0.1:8004/chat" -H "Content-Type: application/json" -d '{"message":"Give me a summary of rental stats by category."}'
