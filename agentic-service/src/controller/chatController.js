@@ -76,15 +76,16 @@ async function getGroundingContext(message) {
     }
 
     // 5. Intent: Availability
-    if (lower.includes('available') || lower.includes('availability') || lower.includes('free')) {
-      const productIdMatch = lower.match(/product\s*(\d+)/i) || lower.match(/id\s*(\d+)/i) || lower.match(/#(\d+)/);
+    const productIdMatch = lower.match(/product\s*(\d+)/i) || lower.match(/id\s*(\d+)/i) || lower.match(/#(\d+)/);
+    if (productIdMatch || lower.includes('available') || lower.includes('availability') || lower.includes('free')) {
       if (productIdMatch) {
+        const id = productIdMatch[1];
         const today = new Date().toISOString().split('T')[0];
         const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        const data = await addCall('Rental Service: Availability', `${RENTAL_SERVICE_URL}/rentals/products/${productIdMatch[1]}/availability`, { from: today, to: nextMonth });
-        if (data) context += `Product ${productIdMatch[1]} availability for the next 30 days: ${JSON.stringify(data)}. `;
-      } else {
-        context += "User asked about availability but no product ID was detected. Remind user to provide a product ID. ";
+        const data = await addCall('Rental Service: Availability', `${RENTAL_SERVICE_URL}/rentals/products/${id}/availability`, { from: today, to: nextMonth });
+        if (data) context += `Product ${id} availability (busy dates) for the next 30 days: ${JSON.stringify(data)}. If the list is empty, it means the product is FULLY AVAILABLE for all dates. `;
+      } else if (lower.includes('available') || lower.includes('availability') || lower.includes('free')) {
+        context += "User asked about availability but no product ID was detected. Ask user for a product ID. ";
       }
     }
 
@@ -142,7 +143,8 @@ export const chat = async (req, res) => {
         RULES:
         1. Use the GROUNDED DATA to provide accurate, factual answers.
         2. DO NOT use scripted responses. Be conversational but precise.
-        3. If data is missing (e.g. no product ID provided for availability), ask the user for the missing details.
+        3. If GROUNDED DATA for availability shows an EMPTY list of busy dates, it means the product is 100% AVAILABLE for that period.
+        4. If data is missing (e.g. no product ID detected yet), ask the user for the missing details.
         4. Mention your sources if they help the user trust the data (e.g. "According to our analytics...").
         5. NEVER hallucinate numbers.` 
       },
