@@ -21,89 +21,152 @@ function isOnTopic(message) {
   return RENTPI_KEYWORDS.some(kw => lower.includes(kw));
 }
 
-/**
- * Intelligent Grounding Engine
- * Detects intent and fetches real-time data from microservices.
- * Returns both the text context and the "proof" (API calls made).
- */
-async function getGroundingContext(message) {
-  const lower = message.toLowerCase();
-  let context = "";
-  let toolsUsed = [];
-
-  const addCall = async (desc, url, params = {}) => {
-    try {
-      toolsUsed.push({ tool: desc, url, params });
-      const response = await axios.get(url, { 
-        params,
-        headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
-        timeout: 5000 
-      });
-      return response.data;
-    } catch (err) {
-      console.warn(`[grounding] ${desc} failed:`, err.message);
-      return null;
+const TOOLS_DEFINITION = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_category_stats',
+      description: 'Get rental statistics grouped by category from the central data API.',
+      parameters: { type: 'object', properties: {}, required: [] }
     }
-  };
-
-  try {
-    // 1. Intent: Category Stats
-    if (lower.includes('category') && (lower.includes('most') || lower.includes('stats'))) {
-      const data = await addCall('Central API: Category Stats', 'https://technocracy.brittoo.xyz/api/data/rentals/stats', { group_by: 'category' });
-      if (data) context += `Current rental stats by category: ${JSON.stringify(data.data)}. `;
-    }
-
-    // 2. Intent: Trending / Recommendations
-    if (lower.includes('trending') || lower.includes('recommend')) {
-      const today = new Date().toISOString().split('T')[0];
-      const data = await addCall('Analytics: Recommendations', `${ANALYTICS_SERVICE_URL}/analytics/recommendations`, { date: today, limit: 5 });
-      if (data) context += `Today's trending recommendations: ${JSON.stringify(data.recommendations)}. `;
-    }
-
-    // 3. Intent: Peak Window
-    if (lower.includes('peak')) {
-      const data = await addCall('Analytics: Peak Window', `${ANALYTICS_SERVICE_URL}/analytics/peak-window`, { from: '2023-01', to: '2024-12' });
-      if (data) context += `Historical peak rental window: ${JSON.stringify(data.peakWindow)}. `;
-    }
-
-    // 4. Intent: Discounts
-    if (lower.includes('discount')) {
-      context += `RentPi Discount Tiers: 80-100 score = 20%, 60-79 = 15%, 40-59 = 10%, 20-39 = 5%, 0-19 = 0%. `;
-      // If a user ID is mentioned, try to fetch it
-      const userIdMatch = lower.match(/user\s*(\d+)/i) || lower.match(/id\s*(\d+)/i);
-      if (userIdMatch) {
-        const data = await addCall('User Service: Discount Lookup', `${USER_SERVICE_URL}/users/${userIdMatch[1]}/discount`);
-        if (data) context += `Specific user ${userIdMatch[1]} discount data: ${JSON.stringify(data)}. `;
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_recommendations',
+      description: 'Get top trending product recommendations for a specific date.',
+      parameters: {
+        type: 'object',
+        properties: {
+          date: { type: 'string', description: 'The date in YYYY-MM-DD format.' },
+          limit: { type: 'number', description: 'Number of recommendations to fetch.', default: 5 }
+        },
+        required: ['date']
       }
     }
-
-    // 5. Intent: Availability
-    const productIdMatch = lower.match(/product\s*(\d+)/i) || lower.match(/id\s*(\d+)/i) || lower.match(/#(\d+)/);
-    if (productIdMatch || lower.includes('available') || lower.includes('availability') || lower.includes('free')) {
-      if (productIdMatch) {
-        const id = productIdMatch[1];
-        const today = new Date().toISOString().split('T')[0];
-        const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        const data = await addCall('Rental Service: Availability', `${RENTAL_SERVICE_URL}/rentals/products/${id}/availability`, { from: today, to: nextMonth });
-        if (data) context += `Product ${id} availability (busy dates) for the next 30 days: ${JSON.stringify(data)}. If the list is empty, it means the product is FULLY AVAILABLE for all dates. `;
-      } else if (lower.includes('available') || lower.includes('availability') || lower.includes('free')) {
-        context += "User asked about availability but no product ID was detected. Ask user for a product ID. ";
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_peak_window',
+      description: 'Find the peak historical rental window (busiest months).',
+      parameters: {
+        type: 'object',
+        properties: {
+          from: { type: 'string', description: 'Start month in YYYY-MM format (e.g. 2023-01)' },
+          to: { type: 'string', description: 'End month in YYYY-MM format (e.g. 2024-12)' }
+        },
+        required: ['from', 'to']
       }
     }
-
-    // 6. Intent: Surge
-    if (lower.includes('surge') || lower.includes('busy')) {
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      const data = await addCall('Analytics: Surge Days', `${ANALYTICS_SERVICE_URL}/analytics/surge-days`, { month: currentMonth });
-      if (data) context += `Surge day predictions for ${currentMonth}: ${JSON.stringify(data.data)}. `;
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_surge_days',
+      description: 'Predict busy/surge days for a specific month.',
+      parameters: {
+        type: 'object',
+        properties: {
+          month: { type: 'string', description: 'The month in YYYY-MM format (e.g. 2025-05).' }
+        },
+        required: ['month']
+      }
     }
-
-  } catch (err) {
-    console.error('[grounding] Critical error:', err.message);
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_availability',
+      description: 'Check if a specific product is available for a date range. Returns a list of busy dates. If the list is empty, the product is 100% available.',
+      parameters: {
+        type: 'object',
+        properties: {
+          productId: { type: 'string', description: 'The product ID number.' },
+          from: { type: 'string', description: 'Start date YYYY-MM-DD' },
+          to: { type: 'string', description: 'End date YYYY-MM-DD' }
+        },
+        required: ['productId', 'from', 'to']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_user_discount',
+      description: 'Get the loyalty score and discount tier for a specific user ID.',
+      parameters: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string', description: 'The user numeric ID.' }
+        },
+        required: ['userId']
+      }
+    }
   }
+];
 
-  return { context, toolsUsed };
-}
+const toolHandlers = {
+  get_category_stats: async () => {
+    const response = await axios.get('https://technocracy.brittoo.xyz/api/data/rentals/stats', { 
+      params: { group_by: 'category' },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_recommendations: async ({ date, limit = 5 }) => {
+    const response = await axios.get(`${ANALYTICS_SERVICE_URL}/analytics/recommendations`, { 
+      params: { date, limit },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_peak_window: async ({ from, to }) => {
+    const response = await axios.get(`${ANALYTICS_SERVICE_URL}/analytics/peak-window`, { 
+      params: { from, to },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_surge_days: async ({ month }) => {
+    const response = await axios.get(`${ANALYTICS_SERVICE_URL}/analytics/surge-days`, { 
+      params: { month },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  check_availability: async ({ productId, from, to }) => {
+    const response = await axios.get(`${RENTAL_SERVICE_URL}/rentals/products/${productId}/availability`, { 
+      params: { from, to },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_user_discount: async ({ userId }) => {
+    const response = await axios.get(`${USER_SERVICE_URL}/users/${userId}/discount`, { 
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  }
+};
+
+const SYSTEM_PROMPT = `You are the RentPi Smart Assistant.
+You have access to several tools to fetch real-time data about rentals, products, users, and analytics.
+
+RULES:
+1. Use the tools whenever a user asks for specific data (stats, availability, recommendations, etc.).
+2. Be conversational but precise.
+3. If a tool returns an empty list for availability, it means the product is FULLY AVAILABLE.
+4. Mention your sources (e.g. "Our analytics show...").
+5. If you need a parameter (like a Product ID or User ID) that wasn't provided, ask the user for it.
+6. Discount Tiers: 80-100 score = 20%, 60-79 = 15%, 40-59 = 10%, 20-39 = 5%, 0-19 = 0%.
+7. NEVER hallucinate numbers. If a tool call fails, inform the user you're having trouble reaching that data source.`;
 
 export const chat = async (req, res) => {
   try {
@@ -117,15 +180,10 @@ export const chat = async (req, res) => {
       });
     }
 
-    let currentSessionId = sessionId;
+    let currentSessionId = sessionId || uuidv4();
+    let session = await Session.findOne({ sessionId: currentSessionId });
     let isNewSession = false;
 
-    if (!currentSessionId) {
-      currentSessionId = uuidv4();
-      isNewSession = true;
-    }
-
-    let session = await Session.findOne({ sessionId: currentSessionId });
     if (!session) {
       session = new Session({ sessionId: currentSessionId });
       isNewSession = true;
@@ -133,28 +191,53 @@ export const chat = async (req, res) => {
 
     const history = await Message.find({ sessionId: currentSessionId }).sort('timestamp');
     
-    // Get Intelligent Grounding
-    const { context, toolsUsed } = await getGroundingContext(message);
-
     const messages = [
-      { 
-        role: 'system', 
-        content: `You are the RentPi Smart Assistant. 
-        GROUNDED DATA: ${context || "No specific data found for this query."}
-        
-        RULES:
-        1. Use the GROUNDED DATA to provide accurate, factual answers.
-        2. DO NOT use scripted responses. Be conversational but precise.
-        3. If GROUNDED DATA for availability shows an EMPTY list of busy dates, it means the product is 100% AVAILABLE for that period.
-        4. If data is missing (e.g. no product ID detected yet), ask the user for the missing details.
-        4. Mention your sources if they help the user trust the data (e.g. "According to our analytics...").
-        5. NEVER hallucinate numbers.` 
-      },
+      { role: 'system', content: SYSTEM_PROMPT },
       ...history.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: message }
     ];
 
-    const reply = await groq.chatCompletion(messages);
+    // Initial Call to Groq with Tools
+    let groqResponse = await groq.chatCompletion(messages, TOOLS_DEFINITION);
+    let toolsUsed = [];
+
+    // Handle Tool Calls
+    if (groqResponse.tool_calls) {
+      messages.push(groqResponse); // Add assistant's tool call message
+      
+      for (const toolCall of groqResponse.tool_calls) {
+        const functionName = toolCall.function.name;
+        const functionArgs = JSON.parse(toolCall.function.arguments);
+        
+        const handler = toolHandlers[functionName];
+        if (handler) {
+          try {
+            const result = await handler(functionArgs);
+            toolsUsed.push({ tool: functionName, params: functionArgs, success: true });
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              name: functionName,
+              content: JSON.stringify(result)
+            });
+          } catch (err) {
+            console.error(`[agent] Tool ${functionName} failed:`, err.message);
+            toolsUsed.push({ tool: functionName, params: functionArgs, success: false, error: err.message });
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              name: functionName,
+              content: JSON.stringify({ error: `Tool execution failed: ${err.message}` })
+            });
+          }
+        }
+      }
+      
+      // Final Call with Tool Results
+      groqResponse = await groq.chatCompletion(messages);
+    }
+
+    const reply = groqResponse.content;
 
     // Persist
     await new Message({ sessionId: currentSessionId, role: 'user', content: message }).save();
@@ -166,13 +249,13 @@ export const chat = async (req, res) => {
     }
     await session.save();
 
-    // Return the reply along with PROOF of tools used
     res.json({ 
       sessionId: currentSessionId, 
       reply,
-      toolsUsed // PROOF of all API calls made
+      toolsUsed
     });
   } catch (error) {
+    console.error('[agent] Critical error:', error);
     res.status(500).json({ error: error.message });
   }
 };
