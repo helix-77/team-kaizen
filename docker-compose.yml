@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${GATEWAY_PORT:-8000}:8000"
+       - "127.0.0.1:${GATEWAY_PORT:-8000}:8000"
     environment:
       PORT:                  8000
       USER_SERVICE_URL:      http://user-service:8001
