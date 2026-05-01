@@ -3,22 +3,25 @@ name: RentPi
 # N.B. You can change this according to your need
 
 services:
-
   # ── Infrastructure ──────────────────────────────────────────────────────────
 
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER:     ${POSTGRES_USER:-rentpi}
+      POSTGRES_USER: ${POSTGRES_USER:-rentpi}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localpassword}
-      POSTGRES_DB:       ${POSTGRES_DB:-rentpi_local}
+      POSTGRES_DB: ${POSTGRES_DB:-rentpi_local}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rentpi} -d ${POSTGRES_DB:-rentpi_local}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-rentpi} -d ${POSTGRES_DB:-rentpi_local}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,11 +53,11 @@ services:
     ports:
       - "${GATEWAY_PORT:-8000}:8000"
     environment:
-      PORT:                  8000
-      USER_SERVICE_URL:      http://user-service:8001
-      RENTAL_SERVICE_URL:    http://rental-service:8002
+      PORT: 8000
+      USER_SERVICE_URL: http://user-service:8001
+      RENTAL_SERVICE_URL: http://rental-service:8002
       ANALYTICS_SERVICE_URL: http://analytics-service:8003
-      AGENTIC_SERVICE_URL:   http://agentic-service:8004
+      AGENTIC_SERVICE_URL: http://agentic-service:8004
     depends_on:
       user-service:
         condition: service_healthy
@@ -80,10 +83,10 @@ services:
     ports:
       - "${USER_SERVICE_PORT:-8001}:8001"
     environment:
-      PORT:              8001
-      DATABASE_URL:      ${DATABASE_URL}
-      JWT_SECRET:        ${JWT_SECRET}
-      CENTRAL_API_URL:   ${CENTRAL_API_URL}
+      PORT: 8001
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CENTRAL_API_URL: ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
     depends_on:
       postgres:
@@ -104,10 +107,10 @@ services:
     ports:
       - "${RENTAL_SERVICE_PORT:-8002}:8002"
     environment:
-      PORT:              8002
-      CENTRAL_API_URL:   ${CENTRAL_API_URL}
+      PORT: 8002
+      CENTRAL_API_URL: ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
-      USER_SERVICE_URL:  http://user-service:8001
+      USER_SERVICE_URL: http://user-service:8001
     depends_on:
       user-service:
         condition: service_healthy
@@ -127,8 +130,8 @@ services:
     ports:
       - "${ANALYTICS_SERVICE_PORT:-8003}:8003"
     environment:
-      PORT:              8003
-      CENTRAL_API_URL:   ${CENTRAL_API_URL}
+      PORT: 8003
+      CENTRAL_API_URL: ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8003/status || exit 1"]
@@ -146,19 +149,19 @@ services:
     ports:
       - "${AGENTIC_SERVICE_PORT:-8004}:8004"
     environment:
-      PORT:                  8004
-      MONGO_URI:             ${MONGO_URI}
-      CENTRAL_API_URL:       ${CENTRAL_API_URL}
-      CENTRAL_API_TOKEN:     ${CENTRAL_API_TOKEN}
-      GEMINI_API_KEY:        ${GEMINI_API_KEY:-}
+      PORT: 8004
+      MONGO_URI: ${MONGO_URI}
+      CENTRAL_API_URL: ${CENTRAL_API_URL}
+      CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
       ANALYTICS_SERVICE_URL: http://analytics-service:8003
-      RENTAL_SERVICE_URL:    http://rental-service:8002
+      RENTAL_SERVICE_URL: http://rental-service:8002
     depends_on:
       mongodb:
         condition: service_healthy
       analytics-service:
         condition: service_healthy
-      rental-service:        
+      rental-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8004/status || exit 1"]
@@ -176,13 +179,13 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      VITE_GATEWAY_URL:        http://localhost:8000
+      VITE_GATEWAY_URL: http://localhost:8000
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:8000
-      GATEWAY_URL_INTERNAL:    http://api-gateway:8000 
+      GATEWAY_URL_INTERNAL: http://api-gateway:8000
     depends_on:
       api-gateway:
         condition: service_healthy
-    healthcheck:                                     
+    healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
       interval: 15s
       timeout: 5s
