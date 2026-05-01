@@ -25,6 +25,20 @@ const TOOLS_DEFINITION = [
   {
     type: 'function',
     function: {
+      name: 'get_product_details',
+      description: 'Get full details for a specific product, including name, description, and base price.',
+      parameters: {
+        type: 'object',
+        properties: {
+          productId: { type: 'string', description: 'The product ID number.' }
+        },
+        required: ['productId']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_category_stats',
       description: 'Get rental statistics grouped by category from the central data API.',
       parameters: { type: 'object', properties: {}, required: [] }
@@ -103,10 +117,63 @@ const TOOLS_DEFINITION = [
         required: ['userId']
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_kth_busiest_date',
+      description: 'Find the k-th busiest date within a date range.',
+      parameters: {
+        type: 'object',
+        properties: {
+          from: { type: 'string', description: 'Start month YYYY-MM' },
+          to: { type: 'string', description: 'End month YYYY-MM' },
+          k: { type: 'number', description: 'Rank (1 = busiest, 2 = second busiest, etc.)' }
+        },
+        required: ['from', 'to', 'k']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_top_categories',
+      description: 'Get the top rental categories for a specific user.',
+      parameters: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string', description: 'The user ID.' },
+          k: { type: 'number', description: 'Number of categories to return.', default: 5 }
+        },
+        required: ['userId']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_longest_free_streak',
+      description: 'Find the longest continuous range of free days for a product in a given year.',
+      parameters: {
+        type: 'object',
+        properties: {
+          productId: { type: 'string', description: 'The product ID.' },
+          year: { type: 'number', description: 'The year (e.g. 2024).' }
+        },
+        required: ['productId', 'year']
+      }
+    }
   }
 ];
 
 const toolHandlers = {
+  get_product_details: async ({ productId }) => {
+    const response = await axios.get(`${RENTAL_SERVICE_URL}/rentals/products/${productId}`, { 
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
   get_category_stats: async () => {
     const response = await axios.get('https://technocracy.brittoo.xyz/api/data/rentals/stats', { 
       params: { group_by: 'category' },
@@ -153,6 +220,30 @@ const toolHandlers = {
       timeout: 5000 
     });
     return response.data;
+  },
+  get_kth_busiest_date: async ({ from, to, k }) => {
+    const response = await axios.get(`${RENTAL_SERVICE_URL}/rentals/kth-busiest-date`, { 
+      params: { from, to, k },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_top_categories: async ({ userId, k = 5 }) => {
+    const response = await axios.get(`${RENTAL_SERVICE_URL}/rentals/users/${userId}/top-categories`, { 
+      params: { k },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
+  },
+  get_longest_free_streak: async ({ productId, year }) => {
+    const response = await axios.get(`${RENTAL_SERVICE_URL}/rentals/products/${productId}/free-streak`, { 
+      params: { year },
+      headers: { Authorization: `Bearer ${process.env.CENTRAL_API_TOKEN}` },
+      timeout: 5000 
+    });
+    return response.data;
   }
 };
 
@@ -160,13 +251,14 @@ const SYSTEM_PROMPT = `You are the RentPi Smart Assistant.
 You have access to several tools to fetch real-time data about rentals, products, users, and analytics.
 
 RULES:
-1. Use the tools whenever a user asks for specific data (stats, availability, recommendations, etc.).
-2. Be conversational but precise.
-3. If a tool returns an empty list for availability, it means the product is FULLY AVAILABLE.
-4. Mention your sources (e.g. "Our analytics show...").
-5. If you need a parameter (like a Product ID or User ID) that wasn't provided, ask the user for it.
-6. Discount Tiers: 80-100 score = 20%, 60-79 = 15%, 40-59 = 10%, 20-39 = 5%, 0-19 = 0%.
-7. NEVER hallucinate numbers. If a tool call fails, inform the user you're having trouble reaching that data source.`;
+1. Use the tools whenever a user asks for specific data (stats, availability, product details, price, recommendations, etc.).
+2. If a user asks for "price related data" or "details" for a product, ALWAYS call get_product_details first.
+3. Be conversational but precise.
+4. If a tool returns an empty list for availability, it means the product is FULLY AVAILABLE.
+5. Mention your sources (e.g. "Our analytics show...").
+6. If you need a parameter (like a Product ID or User ID) that wasn't provided, ask the user for it.
+7. Discount Tiers: 80-100 score = 20%, 60-79 = 15%, 40-59 = 10%, 20-39 = 5%, 0-19 = 0%.
+8. NEVER hallucinate numbers. If a tool call fails, inform the user you're having trouble reaching that data source.`;
 
 export const chat = async (req, res) => {
   try {
