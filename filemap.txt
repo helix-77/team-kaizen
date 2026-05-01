@@ -1,0 +1,58 @@
+rentpi-backend/
+├── api-gateway/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js
+│   ├── routes/
+│   ├── middleware/
+│   ├── swagger.js
+│   └── .env.example
+├── user-service/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js
+│   ├── db.js
+│   ├── routes/
+│   ├── middleware/
+│   ├── swagger.js
+│   └── .env.example
+├── rental-service/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js
+│   ├── routes/
+│   ├── services/
+│   ├── swagger.js
+│   └── .env.example
+├── analytics-service/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js
+│   ├── routes/
+│   ├── services/
+│   ├── swagger.js
+│   ├── proto/
+│   │   └── analytics.proto
+│   └── .env.example
+├── agentic-service/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js
+│   ├── routes/
+│   ├── services/
+│   ├── groq/
+│   ├── mongo/
+│   ├── proto/
+│   │   └── analytics.proto
+│   ├── swagger.js
+│   └── .env.example
+├── shared/
+│   ├── centralApi.js
+│   ├── logger.js
+│   └── retry.js
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── .dockerignore
+├── README.md
+└── Makefile

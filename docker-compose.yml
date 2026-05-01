@@ -24,7 +24,9 @@ services:
       retries: 5
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   mongodb:
     image: mongo:7-jammy
     restart: unless-stopped
@@ -39,7 +41,9 @@ services:
       retries: 5
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   # ── Application Services ────────────────────────────────────────────────────
 
   api-gateway:
@@ -71,7 +75,9 @@ services:
       retries: 3
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   user-service:
     build:
       context: ./user-service
@@ -95,7 +101,9 @@ services:
       retries: 3
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   rental-service:
     build:
       context: ./rental-service
@@ -118,7 +126,9 @@ services:
       retries: 3
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   analytics-service:
     build:
       context: ./analytics-service
@@ -137,7 +147,9 @@ services:
       retries: 3
     networks:
       - rentpi-net
-
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
   agentic-service:
     build:
       context: ./agentic-service
@@ -150,7 +162,7 @@ services:
       MONGO_URI:             ${MONGO_URI}
       CENTRAL_API_URL:       ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN:     ${CENTRAL_API_TOKEN}
-      GEMINI_API_KEY:        ${GEMINI_API_KEY:-}
+      GROQ_API_KEY:          ${GROQ_API_KEY:-}
       ANALYTICS_SERVICE_URL: http://analytics-service:8003
       RENTAL_SERVICE_URL:    http://rental-service:8002
     depends_on:
@@ -167,28 +179,32 @@ services:
       retries: 3
     networks:
       - rentpi-net
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      VITE_GATEWAY_URL:        http://localhost:8000
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8000
-      GATEWAY_URL_INTERNAL:    http://api-gateway:8000 
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:                                     
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-    networks:
-      - rentpi-net
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${FRONTEND_PORT:-3000}:3000"
+  #   environment:
+  #     VITE_GATEWAY_URL:        http://localhost:8000
+  #     NEXT_PUBLIC_GATEWAY_URL: http://localhost:8000
+  #     GATEWAY_URL_INTERNAL:    http://api-gateway:8000 
+  #   depends_on:
+  #     api-gateway:
+  #       condition: service_healthy
+  #   healthcheck:                                     
+  #     test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+  #   networks:
+  #     - rentpi-net
 
 # ── Named Volumes ─────────────────────────────────────────────────────────────
 volumes:

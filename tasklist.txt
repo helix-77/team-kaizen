@@ -1,0 +1,505 @@
+Your Role:
+You are a Principal Backend Architect, Senior Microservices Engineer, Senior DevOps Engineer, Senior AI Engineer, Senior Docker Engineer, and Senior Documentation Engineer responsible for building the ENTIRE backend infrastructure for the “Technocracy Lite - HACKSPARK” RentPi platform.
+
+Short basic instruction:
+Build the COMPLETE backend-only RentPi microservice platform using Node.js and JavaScript (NOT strict TypeScript), using GROQ API instead of Gemini. The goal is to get ALL backend services fully operational and runnable using Docker Compose.
+
+What you should do:
+You must generate ALL backend source code, configurations, Docker infrastructure, setup documentation, API documentation, environment setup, database configuration, inter-service communication, AI integration, algorithms, and testing setup required to run the complete backend system.
+
+Frontend is NOT required.
+
+You MUST generate:
+- Complete backend repository structure
+- All microservices
+- All Dockerfiles
+- docker-compose.yml
+- MongoDB setup
+- PostgreSQL OR SQLite setup (choose easiest stable option)
+- Environment setup manuals
+- Swagger/OpenAPI docs
+- Complete API implementations
+- All required algorithms
+- GROQ integration
+- gRPC bonus implementation
+- Rate-limit retry handling
+- Session persistence
+- Logging
+- Health checks
+- Validation
+- Documentation
+
+Your Goal:
+Create a FULLY RUNNING backend-only microservice architecture for the RentPi challenge where ALL services successfully start and communicate using:
+docker-compose up --build
+
+Result:
+You must generate:
+1. FULL backend architecture
+2. COMPLETE folder structure
+3. COMPLETE setup guide
+4. ALL backend services source code
+5. ALL Dockerfiles
+6. COMPLETE docker-compose.yml
+7. Environment variable templates
+8. Database schemas
+9. API documentation
+10. Swagger setup
+11. GROQ integration
+12. gRPC bonus implementation
+13. Retry/backoff implementation
+14. Complete algorithms
+15. Logging/error handling
+16. Postman collection
+17. Testing setup
+18. README documentation
+19. Troubleshooting guide
+20. Full run instructions
+
+Constraint:
+- NO frontend code
+- NO React
+- NO Tailwind
+- NO UI
+- Use JavaScript Node.js backend only
+- Use Express.js
+- Use Docker
+- Use MongoDB
+- Use PostgreSQL OR SQLite (choose simplest stable implementation)
+- Use GROQ API ONLY
+- Must implement ALL backend challenge requirements
+- Must implement ALL APIs
+- Must implement ALL algorithms correctly
+- Must support clean-machine startup
+- Must include complete setup documentation
+- Must include all environment files
+- Must include optimized Docker builds
+- Must include Swagger docs
+- Must include request validation
+- Must include JWT auth
+- Must include secure password hashing
+- Must include caching where required
+- Must include session persistence
+- Must include gRPC bonus
+- Must include retry/backoff bonus
+- Must include complete error handling
+
+Context:
+Hackathon Project:
+RentPi microservice platform with:
+- api-gateway
+- user-service
+- rental-service
+- analytics-service
+- agentic-service
+
+Services communicate internally through Docker network.
+
+Ports:
+- api-gateway → 8000
+- user-service → 8001
+- rental-service → 8002
+- analytics-service → 8003
+- agentic-service → 8004
+- postgres/sqlite
+- mongodb
+
+Central API:
+https://technocracy.brittoo.xyz
+
+Authorization:
+Bearer token from environment variable.
+
+Rate limit:
+30 req/min
+
+====================================================================
+PHASE 1 — BACKEND SYSTEM ARCHITECTURE
+====================================================================
+
+FIRST:
+Generate COMPLETE backend architecture including:
+- Microservice communication flow
+- Docker network architecture
+- JWT auth flow
+- GROQ integration architecture
+- MongoDB architecture
+- PostgreSQL/SQLite architecture
+- Retry/backoff architecture
+- Logging architecture
+- Health check architecture
+- gRPC architecture
+- Session persistence architecture
+
+THEN:
+Generate COMPLETE monorepo folder structure.
+
+====================================================================
+PHASE 2 — ENVIRONMENT SETUP GUIDE
+====================================================================
+
+Generate EXTREMELY detailed setup instructions for:
+- Windows
+- Linux
+- macOS
+
+Include:
+- Docker installation
+- Docker Desktop setup
+- Node.js installation
+- Git installation
+- VSCode setup
+- Docker RAM settings
+- MongoDB setup
+- PostgreSQL OR SQLite setup
+- GROQ API key setup
+- Environment variable setup
+- JWT secret generation
+- Troubleshooting guide
+
+Generate:
+- root .env.example
+- service .env.example files
+- Docker env configs
+
+====================================================================
+PHASE 3 — ROOT PROJECT INITIALIZATION
+====================================================================
+
+Generate:
+- root package.json
+- docker-compose.yml
+- Makefile
+- README.md
+- .gitignore
+- .dockerignore
+- eslint config
+- prettier config
+- shared utility structure
+
+====================================================================
+PHASE 4 — API GATEWAY IMPLEMENTATION
+====================================================================
+
+Generate COMPLETE code for:
+- Express API gateway
+- Route proxying
+- JWT verification
+- Logging middleware
+- Rate limiting
+- Error handling
+- Health aggregation
+- Swagger docs
+- Parallel downstream health checks
+- Security middleware
+- Dockerfile
+
+Endpoints:
+- GET /status
+- Proxy routes for all services
+
+Include:
+- Helmet
+- Compression
+- CORS
+- Morgan/Pino logging
+
+====================================================================
+PHASE 5 — USER SERVICE IMPLEMENTATION
+====================================================================
+
+Generate COMPLETE code for:
+- Register/login system
+- JWT auth
+- Password hashing
+- Database schema
+- User profile
+- Discount calculation
+- Central API integration
+- Retry/backoff logic
+- Validation
+- Error handling
+- Swagger docs
+- Dockerfile
+
+Endpoints:
+- GET /status
+- POST /users/register
+- POST /users/login
+- GET /users/me
+- GET /users/:id/discount
+
+Requirements:
+- bcrypt hashing
+- JWT tokens
+- duplicate email protection
+- validation middleware
+- proper HTTP status codes
+
+====================================================================
+PHASE 6 — RENTAL SERVICE IMPLEMENTATION
+====================================================================
+
+Generate COMPLETE code for:
+- Product proxy
+- Pagination
+- Category caching
+- Availability algorithm
+- Kth busiest date algorithm
+- Top categories algorithm
+- Longest free streak algorithm
+- Unified merged feed algorithm
+- Batch fetching
+- Retry/backoff
+- Validation
+- Swagger docs
+- Dockerfile
+
+Endpoints:
+- GET /status
+- GET /rentals/products
+- GET /rentals/products/:id
+- GET /rentals/products/:id/availability
+- GET /rentals/kth-busiest-date
+- GET /rentals/users/:id/top-categories
+- GET /rentals/products/:id/free-streak
+- GET /rentals/merged-feed
+
+MANDATORY:
+Implement optimized algorithms:
+- interval merging
+- sliding window
+- top-k heap
+- k-way merge
+- monotonic stack
+
+Explain algorithms clearly.
+
+====================================================================
+PHASE 7 — ANALYTICS SERVICE IMPLEMENTATION
+====================================================================
+
+Generate COMPLETE code for:
+- Peak window analytics
+- Surge day detection
+- Seasonal recommendations
+- Missing date filling
+- Sliding window optimization
+- Monotonic stack
+- Product enrichment
+- Retry/backoff
+- Validation
+- Swagger docs
+- Dockerfile
+
+Endpoints:
+- GET /status
+- GET /analytics/peak-window
+- GET /analytics/surge-days
+- GET /analytics/recommendations
+
+MANDATORY:
+Explain ALL algorithms.
+
+====================================================================
+PHASE 8 — AGENTIC SERVICE IMPLEMENTATION
+====================================================================
+
+IMPORTANT:
+USE GROQ API INSTEAD OF GEMINI.
+
+Recommended model:
+- llama-3.3-70b-versatile
+
+Generate COMPLETE code for:
+- GROQ API integration
+- Topic guard
+- Intent routing
+- Tool routing
+- Context grounding
+- MongoDB chat persistence
+- Session management
+- Session naming
+- Conversation memory
+- Retry handling
+- Prompt templates
+- Error handling
+- Swagger docs
+- Dockerfile
+
+Endpoints:
+- POST /chat
+- GET /chat/sessions
+- GET /chat/:sessionId/history
+- DELETE /chat/:sessionId
+- GET /status
+
+MANDATORY:
+Implement:
+- off-topic refusal BEFORE LLM call
+- grounded responses ONLY
+- no hallucination policy
+- session persistence
+- resumable chat memory
+
+Generate:
+- MongoDB schemas
+- GROQ wrapper
+- Tool registry
+- Prompt system
+- Session repository
+
+====================================================================
+PHASE 9 — gRPC BONUS IMPLEMENTATION
+====================================================================
+
+Generate:
+- .proto files
+- gRPC server
+- gRPC client
+- Internal communication example
+- Docker integration
+
+Use:
+- agentic-service ↔ analytics-service
+
+====================================================================
+PHASE 10 — DOCKER & DEVOPS
+====================================================================
+
+Generate COMPLETE:
+- multistage Dockerfiles
+- optimized images
+- health checks
+- named volumes
+- Docker networking
+- service dependencies
+
+MANDATORY:
+Support:
+docker-compose up --build
+
+Generate:
+- production-ready compose setup
+- healthcheck configs
+- restart policies
+
+====================================================================
+PHASE 11 — DATABASES
+====================================================================
+
+Generate COMPLETE:
+MONGODB:
+- collections
+- indexes
+- persistence config
+
+POSTGRESQL OR SQLITE:
+- schema
+- migrations
+- initialization
+
+Explain:
+- backup strategy
+- persistence
+- Docker volume usage
+
+====================================================================
+PHASE 12 — TESTING
+====================================================================
+
+Generate:
+- unit tests
+- API tests
+- integration tests
+- sample curl commands
+- Postman collection
+
+Use:
+- Jest
+- Supertest
+
+====================================================================
+PHASE 13 — SECURITY
+====================================================================
+
+Implement:
+- JWT validation
+- bcrypt hashing
+- Helmet
+- CORS
+- env protection
+- input validation
+- sanitization
+- rate limiting
+
+Generate:
+- security checklist
+- production hardening guide
+
+====================================================================
+PHASE 14 — DOCUMENTATION
+====================================================================
+
+Generate COMPLETE:
+1. MASTER README
+2. Backend setup guide
+3. API documentation
+4. Docker guide
+5. Troubleshooting guide
+6. Deployment guide
+7. Architecture guide
+8. Database guide
+9. Debugging guide
+
+Include:
+- commands
+- API examples
+- Docker examples
+- curl examples
+- health check examples
+
+====================================================================
+PHASE 15 — FINAL VALIDATION
+====================================================================
+
+Generate:
+- final backend validation checklist
+- judge simulation checklist
+- endpoint verification checklist
+- Docker validation checklist
+- service startup checklist
+- API verification checklist
+
+Then generate:
+- exact execution order
+- exact setup commands
+- exact testing sequence
+- exact deployment process
+
+MANDATORY EXECUTION STYLE:
+You must:
+- think step-by-step
+- generate production-grade code
+- explain algorithms
+- include comments
+- include validation
+- include logging
+- include optimization notes
+- include scalability notes
+- include security notes
+- include debugging notes
+
+VERY IMPORTANT:
+Do NOT skip files.
+Do NOT summarize code.
+Generate COMPLETE implementations.
+Generate ALL configs.
+Generate ALL Dockerfiles.
+Generate ALL environment files.
+Generate ALL APIs.
+Generate ALL algorithms.
+Generate ALL setup instructions.
+Generate ALL documentation.
+
+The final result must be a COMPLETE backend-only enterprise-grade RentPi implementation using GROQ API.
