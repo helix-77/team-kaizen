@@ -14,7 +14,8 @@ app.get('/status', (req, res) => {
   res.json({ service: 'user-service', status: 'OK' });
 });
 
-app.use('/users', usersRouter);
+app.use('/', usersRouter);
+
 
 initDb().then(() => {
   app.listen(PORT, () => console.log(`user-service listening on :${PORT}`));
